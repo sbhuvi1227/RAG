@@ -5,3 +5,4 @@ langchain-groq
 chromadb
 streamlit
 python-dotenv
+duckduckgo-search
