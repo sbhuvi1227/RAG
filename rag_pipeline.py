@@ -8,6 +8,8 @@ from langchain_community.chat_models import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
+from web_rag import web_search_rag
+
 load_dotenv()
 
 # ----------------------------
@@ -21,7 +23,7 @@ PERSIST_DIR = "vectorstore"
 
 
 # ----------------------------
-# Load or Create Vector Store
+# Load Vectorstore
 # ----------------------------
 def load_vectorstore():
 
@@ -35,6 +37,7 @@ def load_vectorstore():
             embedding=embeddings,
             persist_directory=PERSIST_DIR
         )
+
     else:
         vectorstore = Chroma(
             persist_directory=PERSIST_DIR,
@@ -45,37 +48,52 @@ def load_vectorstore():
 
 
 # ----------------------------
-# Load Groq LLM (OpenAI-compatible)
+# Load LLM
 # ----------------------------
 def load_llm():
 
     return ChatOpenAI(
         openai_api_key=os.getenv("GROQ_API_KEY"),
         openai_api_base="https://api.groq.com/openai/v1",
-        model="llama-3.1-8b-instant",  # Active Groq model
+        model="llama-3.1-8b-instant",
         temperature=0,
         max_tokens=1024
     )
 
 
 # ----------------------------
-# RAG Function (Modern LCEL)
+# Local RAG with Similarity Threshold
 # ----------------------------
-def get_answer(query: str):
+def local_rag(query: str):
 
     vectorstore = load_vectorstore()
-    retriever = vectorstore.as_retriever()
 
-    llm = load_llm()
+    # Get docs with similarity scores
+    results = vectorstore.similarity_search_with_score(query, k=3)
 
-    # Retrieve documents
-    docs = retriever.invoke(query)
+    if not results:
+        return None
+
+    # Chroma: lower score = better match
+    best_score = results[0][1]
+
+    print("Best similarity score:", best_score)
+
+    # 🔥 IMPORTANT THRESHOLD
+    # If score is too high → not relevant → trigger web search
+    if best_score > 0.6:
+        print("Low relevance. Triggering web search.")
+        return None
+
+    docs = [doc for doc, score in results]
+
     context = "\n".join([doc.page_content for doc in docs])
 
-    # Prompt
     prompt = ChatPromptTemplate.from_template(
         """
-        Answer the question based only on the context below.
+        Answer the question strictly using the context below.
+        If the answer is not in the context, say:
+        "Information not available in local database."
 
         Context:
         {context}
@@ -85,13 +103,30 @@ def get_answer(query: str):
         """
     )
 
-    chain = (
-        prompt
-        | llm
-        | StrOutputParser()
-    )
+    chain = prompt | load_llm() | StrOutputParser()
 
-    return chain.invoke({
+    response = chain.invoke({
         "context": context,
         "question": query
     })
+
+    # 🔥 EXTRA SAFETY CHECK
+    if "Information not available" in response:
+        return None
+
+    return response
+
+
+# ----------------------------
+# Hybrid RAG Controller
+# ----------------------------
+def get_answer(query: str):
+
+    # 1️⃣ Try local RAG
+    local_answer = local_rag(query)
+
+    if local_answer is not None:
+        return local_answer
+
+    # 2️⃣ Fallback to Web RAG
+    return web_search_rag(query)
