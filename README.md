@@ -1,21 +1,85 @@
-# 📚 College FAQ Chatbot – Simple RAG
+Enhanced College FAQ Chatbot (Hybrid RAG + Web Search)
+🚀 Overview
 
-## 🔍 Overview
-This project implements a simple Retrieval-Augmented Generation (RAG) chatbot
-that answers questions based on college information.
+This project is an Enhanced College FAQ Chatbot built using:
 
-## 🛠 Tech Stack
-- LangChain
-- ChromaDB
-- HuggingFace Embeddings
-- Groq LLM
-- Streamlit
+✅ Local Document RAG (Chroma + HuggingFace Embeddings)
 
-## 🚀 Run Locally
+✅ Smart Similarity Threshold Detection
 
-1. Clone the repo
-2. Install dependencies:
-   pip install -r requirements.txt
-3. Add GROQ_API_KEY in .env
-4. Run:
-   streamlit run app.py
+✅ Automatic Web Search Fallback (DuckDuckGo)
+
+✅ Groq LLM (LLaMA 3 via OpenAI-compatible endpoint)
+
+✅ Streamlit UI
+
+The system first searches the local college document database.
+If relevant information is not found, it automatically performs a web search and generates an answer from online results.
+
+User Query
+    ↓
+Local Vector DB (Chroma)
+    ↓
+Similarity Score Check
+    ↓
+If Relevant → Local RAG Answer
+If Not Relevant → Web Search RAG
+    ↓
+Groq LLM Generates Final Answer
+    ↓
+Streamlit UI
+
+
+⚙️ Technologies Used
+
+Python 3.11
+
+LangChain
+
+ChromaDB
+
+HuggingFace Embeddings (all-MiniLM-L6-v2)
+
+Groq API (LLaMA 3.1 8B Instant)
+
+DuckDuckGo Search
+
+Streamlit
+
+
+🔍 How It Works
+🟢 Local RAG
+
+Converts college_info.txt into embeddings
+
+Stores in ChromaDB
+
+Retrieves top similar documents
+
+Checks similarity score
+
+If score is good → answer generated locally
+
+🔵 Web Search RAG
+
+Triggered when similarity score is low
+
+Uses DuckDuckGo search
+
+Feeds search results into Groq LLM
+
+Generates answer from web data
+
+🎯 Key Features
+
+Hybrid Retrieval Architecture
+
+Smart Fallback Mechanism
+
+Groq LLM Integration
+
+Production-Ready Structure
+
+Clean Streamlit UI
+
+Extensible Design
