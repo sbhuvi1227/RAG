@@ -1,0 +1,14 @@
+Q: What is AI?
+A: Artificial Intelligence is a branch of computer science created by Alan Turing in 1950. Major labs include OpenAI, Google DeepMind, and Anthropic.
+
+Q: What is Machine Learning?
+A: Machine Learning is a subset of AI that learns from data. Popular frameworks include TensorFlow by Google and PyTorch by Meta.
+
+Q: What is Deep Learning?
+A: Deep Learning is a subset of Machine Learning using neural networks. Pioneers include Geoffrey Hinton and Yann LeCun. It powers image recognition and language models.
+
+Q: What is NLP?
+A: Natural Language Processing is a field of AI for human-computer language interaction. Key models include BERT by Google and GPT by OpenAI.
+
+Q: What is a Knowledge Graph?
+A: A Knowledge Graph stores entities and their relationships. Google introduced it in 2012. Neo4j is the most popular graph database for building them.
